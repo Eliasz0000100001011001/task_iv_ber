@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-
+using namespace std;
 struct berResults
 {
     double tot; //total number of bits
@@ -10,33 +10,73 @@ struct berResults
 };
 
 uint8_t hammingDistance(uint8_t n1, uint8_t n2);
-void createFile1(const std::string name, const int count, const char value);
-berResults calculateBer(std::string fpath1, std::string fpath2);
+void createFile1(const string name, const int count, const char value);
+berResults calculateBer(string fpath1, string fpath2);
 void printResult(berResults results);
 
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
-    std::string fpath1; //path to file 1
-    std::string fpath2; //path to file 2
-    berResults results; 
+    string fpath1; //path to file 1
+    string fpath2; //path to file 2
+    berResults results;
 
     openLog("log.log"); //create log.log file for logging purposes
     if (argc != 3) //check the number of arguments
     {
         saveLog("User did not provide path to the files.");
         saveLog("Creating the test files for user...");
-        //test 1
-        createFile1("test1_file1.bin", 100, 0xFF); //1111 1111
-        createFile1("test1_file2.bin", 100, 0xFE); //1111 1110
-        //test 2
-        
-        /*
-            missing function to change 10 bits in the file
-        */
 
-        //test 3
-        //createFile1("test3_file1.bin",400000000,0x55); 
-        //createFile1("test3_file2.bin",400000000,0x50);
+        bool powtorzenie = true;
+
+
+        while (powtorzenie)
+        {
+            //cout << "Wybierz ktory test \n\n1. Test 1 \n2. Test 2 \n3. Test 3 \n\n 4. Wyjscie ";
+                 /*cout << endl;*/
+            printf("\n, Wybierz ktory test \n\n1.Test 1 \n2.Test 2 \n3.Test 3 \n\n 4. Wyjscie ");
+            int wybierz;
+            cin >> wybierz;
+            switch (wybierz) {
+
+            case 1:
+            {
+                //test 1 tworzymy takie same pliki z 0x55 
+
+                createFile1("test1_file1.bin", 100, 0x55);
+                createFile1("test1_file2.bin", 100, 0x55);
+                results = calculateBer("test1_file1.bin", "test1_file2.bin");
+                printResult(results);
+                break;
+            }
+            //test 2 pliki, ktore roznia sie 10 bajtami
+            case 2:
+            {
+                createFile1("test2_file1.bin", 100, 0xFF);
+                createFile1("test2_file2.bin", 100, 0xFE);
+                results = calculateBer("test2_file1.bin", "test2_file2.bin");
+                printResult(results);
+                break;
+            }
+
+            case 3:
+            {
+                // test 3, 2 pliki po 400mb
+                createFile1("test3_file1.bin", 400000000, 0x55);
+                createFile1("test3_file2.bin", 400000000, 0x50);
+                results = calculateBer("test3_file1.bin", "test3_file2.bin");
+                printResult(results);
+                break;
+            }
+
+            case 0:
+            {
+                //wyjscie
+                powtorzenie = false;
+                break;
+            }
+            }
+        }
+
         saveLog("Test files are prepared");
         saveLog("Re-run with correct arguments ie: ./task_iv_ber.exe test1_file1.bin test1_file2.bin");
     }
@@ -66,20 +106,22 @@ uint8_t hammingDistance(uint8_t n1, uint8_t n2)
     return setBits;
 }
 
-void createFile1(const std::string name, const int count, const char value)
+
+void createFile1(const  string name, const int count, const char value)
 {
-    std::fstream f;
-    f.open(name.c_str(), std::ios::binary | std::ios::out);
+    fstream f;
+    f.open(name.c_str(), ios::binary | ios::out);
     for (int i = 0; i < count; i++)
     {
-        f.write((char*)&value,1);
+        f.write((char*)&value, 1);
     }
     f.close();
 }
 
-berResults calculateBer(std::string fpath1, std::string fpath2)
+
+berResults calculateBer(string fpath1, string fpath2)
 {
-    std::fstream f1, f2; //handlers to files
+    fstream f1, f2; //handlers to files
     berResults results;
     results.t1 = 0;
     results.t2 = 0;
@@ -88,8 +130,8 @@ berResults calculateBer(std::string fpath1, std::string fpath2)
     results.tot = 0;
 
     saveLog("Calculating BER...");
-    f1.open(fpath1.c_str(), std::ios::binary | std::ios::in);
-    f2.open(fpath2.c_str(), std::ios::binary | std::ios::in);
+    f1.open(fpath1.c_str(), ios::binary | ios::in);
+    f2.open(fpath2.c_str(), ios::binary | ios::in);
     char a = 0x00;
     char b = 0x00;
     results.t1 = clock();
@@ -106,18 +148,18 @@ berResults calculateBer(std::string fpath1, std::string fpath2)
     }
 
     results.ber = (float)results.err / results.tot; // calculate ber
-    results.t2 = clock(); 
+    results.t2 = clock();
     saveLog("BER calculations are done");
     return results; //return structure with all results
 }
 
 void printResult(berResults results)
 {
-    std::stringstream message;
-    message << "Results are: " << std::endl;
-    message << "BER: " << results.ber << std::endl;
-    message << "Tot: " << results.tot << std::endl;
-    message << "Err: " << results.err << std::endl;
-    message << "Calc time: " << ((float)results.t2 - results.t1) / CLOCKS_PER_SEC << " sec " << std::endl;
+    stringstream message;
+    message << "Results are: " << endl;
+    message << "BER: " << results.ber << endl;
+    message << "Tot: " << results.tot << endl;
+    message << "Err: " << results.err << endl;
+    message << "Calc time: " << ((float)results.t2 - results.t1) / CLOCKS_PER_SEC << " sec " << endl;
     saveLog(message.str());
 }
